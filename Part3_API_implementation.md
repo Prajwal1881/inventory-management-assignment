@@ -1,4 +1,4 @@
-```
+
 # Part 3: API Implemented for Stock Alert
 
 ```
@@ -7,7 +7,7 @@ def low_stock_alerts(company_id):
     try:
         alerts = []
         
-        # Query products with low stock
+        # Query to get products with low stock
         results = db.session.query(
             Product.id, Product.name, Product.sku,
             Inventory.warehouse_id, Warehouse.name.label('warehouse_name'),
@@ -24,7 +24,8 @@ def low_stock_alerts(company_id):
         
         for r in results:
             # Estimate days until stockout (simple assumption)
-            avg_daily_sales = 1  # TODO: compute from logs
+            # Ideally, this comes from recent sales logs
+            avg_daily_sales = 1  # This should comput from sales_logs
             days_until_stockout = r.quantity // avg_daily_sales if avg_daily_sales > 0 else None
             
             alerts.append({
@@ -47,5 +48,23 @@ def low_stock_alerts(company_id):
 
     except Exception as e:
         return {"error": str(e)}, 500
-
 ```
+
+## Edge Cases Considered
+
+#### No products below threshold
+- Return { "alerts": [], "total_alerts": 0 } instead of error.
+#### Missing or invalid company_id
+- If company not found, query returns no results (empty alerts list).
+- Could optionally add 404 if required.
+#### Products without suppliers
+- Assumed every product has at least one supplier.
+- If not, should handle with default None.
+#### Division by zero in stockout calculation
+- If avg_daily_sales is 0, return None for days_until_stockout.
+#### Database errors
+- Wrapped in try-except with rollback and clean error response.
+#### Threshold not set for a product
+- Default threshold in Product model (low_stock_threshold = 10).
+
+

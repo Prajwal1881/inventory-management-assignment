@@ -1,5 +1,3 @@
-### PART2_DatabaseDesign.md
-
 # Part 2: Database Design
 
 ## Tables

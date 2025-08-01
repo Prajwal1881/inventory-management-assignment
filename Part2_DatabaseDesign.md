@@ -53,14 +53,44 @@
 - quantity (Integer)
 
 ---
+## Design Decisions and Justifications
 
-## Relationships (Text-based ERD)
-- Company → Warehouses (1:N)
-- Product → Inventory (1:N)
-- Warehouse → Inventory (1:N)
-- Product ↔ Supplier (M:N via Product_Suppliers)
-- Inventory → Inventory_Logs (1:N)
-- Product ↔ Product (Bundles table defines M:N for bundles)
+### Primary Keys
+- Every table has a surrogate key (`id`) for simplicity and consistency.
+- Ensures easier joins and avoids composite PKs for readability.
+
+### Foreign Keys
+- Enforce referential integrity (e.g., `warehouse_id` in Inventory must exist in Warehouses).
+- Prevents orphan records.
+
+### Indexes
+- **Products.sku → Unique Index**
+  - Ensures SKU uniqueness across platform.
+  - Optimizes lookups since SKU will be frequently searched.
+- **Inventory (warehouse_id, product_id) → Composite Index**
+  - Improves stock queries per warehouse and product.
+- **Inventory_Logs.inventory_id**
+  - Needed for quick retrieval of sales history when computing recent activity.
+
+### Constraints
+- **CHECK (quantity >= 0) on Inventory**
+  - Prevents negative stock values.
+- **NOT NULL on critical fields** (`name`, `sku`, `price`)  
+  - Ensures data completeness.
+- **Unique constraint on Products.sku**
+  - Business rule enforcement for unique product identifiers.
+
+### Normalization
+- Schema is in 3rd Normal Form (3NF).
+- Avoids duplication: Suppliers stored separately, Products reusable across warehouses.
+
+### Auditability
+- **Inventory_Logs** tracks every stock change.
+- Allows historical reporting and future analytics (e.g., sales trends).
+
+### Scalability
+- Separation of **Products**, **Warehouses**, and **Inventory** supports companies with multiple warehouses.
+- Many-to-many structure for **Product ↔ Supplier** allows flexible supplier management.
 
 ---
 

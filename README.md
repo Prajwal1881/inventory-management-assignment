@@ -37,7 +37,7 @@ This repository contains my submission for the Backend Engineering Intern Case S
   - Decimal type for price  
   - Warehouse relation moved to Inventory table  
 
-See [`PART1_CodeReview.md`](./PART1_CodeReview.md).
+See [`Part1_CodeReview.md`](./Part1_CodeReview.md).
 
 ---
 
@@ -57,7 +57,7 @@ See [`PART1_CodeReview.md`](./PART1_CodeReview.md).
 - `price` → DECIMAL(10,2)  
 - `low_stock_threshold` → INT  
 
-See [`PART2_DatabaseDesign.md`](./PART2_DatabaseDesign.md).
+See [`Part2_DatabaseDesign.md`](./Part2_DatabaseDesign.md).
 
 ---
 
@@ -65,3 +65,25 @@ See [`PART2_DatabaseDesign.md`](./PART2_DatabaseDesign.md).
 - Implemented endpoint:  
   ```http
   GET /api/companies/{company_id}/alerts/low-stock
+
+#### Business Rules Implemented:
+- Products with stock below their threshold trigger alerts
+- Supplier details included for reordering
+- Supports multiple warehouses per company
+- Added placeholder logic for estimating days_until_stockout
+#### Edge Cases Handled:
+- No products below threshold → returns empty list
+- Invalid company_id → returns empty alerts
+- Division by zero in stockout calculation avoided
+- Products without threshold → default set at 10
+- Graceful error handling with try-except
+
+See [`Part3_APIImplementation.md`](./Part3_APIImplementation.md).
+
+
+### 🔑 Assumptions
+- SKUs are globally unique across the platform.
+- Price stored as DECIMAL(10,2) for accuracy.
+- Default low stock threshold = 10 if not specified.
+- Recent sales activity would be checked via Inventory_Logs (placeholder logic in this implementation).
+- Each product has at least one supplier.

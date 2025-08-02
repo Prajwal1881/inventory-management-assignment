@@ -65,6 +65,7 @@ See [`Part2_DatabaseDesign.md`](./Part2_DatabaseDesign.md).
 - Implemented endpoint:  
   ```http
   GET /api/companies/{company_id}/alerts/low-stock
+See [`Part3_APIImplementation.md`](./Part3_APIImplementation.md).
 
 #### Business Rules Implemented:
 - Products with stock below their threshold trigger alerts
@@ -77,10 +78,7 @@ See [`Part2_DatabaseDesign.md`](./Part2_DatabaseDesign.md).
 - Division by zero in stockout calculation avoided
 - Products without threshold → default set at 10
 - Graceful error handling with try-except
-
-See [`Part3_APIImplementation.md`](./Part3_APIImplementation.md).
-
-
+---
 ### 🔑 Assumptions
 - SKUs are globally unique across the platform.
 - Price stored as DECIMAL(10,2) for accuracy.

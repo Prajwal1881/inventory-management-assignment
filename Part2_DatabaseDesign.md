@@ -3,53 +3,159 @@
 ## Tables
 
 ### Companies
-- id (PK)
-- name
-- created_at
-
+```
+CREATE TABLE Companies (
+    company_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+#### Attributes
+- company_id → INT, PK
+- name → VARCHAR(255)
+- created_at → TIMESTAMP
+#### Relationship
+- One company → many warehouses (1:N).
+##
 ### Warehouses
-- id (PK)
-- company_id (FK → Companies.id)
-- name
-- location
-
+```
+CREATE TABLE Warehouses (
+    warehouse_id INT AUTO_INCREMENT PRIMARY KEY,
+    company_id INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    location VARCHAR(255),
+    FOREIGN KEY (company_id) REFERENCES Companies(company_id)
+);
+```
+#### Attributes
+- warehouse_id → INT, PK
+- company_id → INT, FK
+- name → VARCHAR(255)
+- location → VARCHAR(255)
+#### Relationship
+- One company → many warehouses.
+- One warehouse → many inventory records.
+##
 ### Products
-- id (PK)
-- name
-- sku (Unique)
-- price (Decimal)
-- low_stock_threshold (Integer)
-
+```
+CREATE TABLE Products (
+    product_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    sku VARCHAR(100) NOT NULL UNIQUE,
+    price DECIMAL(10,2) NOT NULL,
+    low_stock_threshold INT DEFAULT 10
+);
+```
+#### Attributes
+- product_id → INT, PK
+- name → VARCHAR(255)
+- sku → VARCHAR(100), UNIQUE
+- price → DECIMAL(10,2)
+- low_stock_threshold → INT
+#### Relationship
+- One product → many inventory records.
+- One product → many suppliers.
+- One product → can be in bundles.
+##
 ### Inventory
-- id (PK)
-- product_id (FK → Products.id)
-- warehouse_id (FK → Warehouses.id)
-- quantity (Integer, >=0)
-- updated_at (Timestamp)
-
+```
+CREATE TABLE Inventory (
+    inventory_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    warehouse_id INT NOT NULL,
+    quantity INT NOT NULL CHECK (quantity >= 0),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES Products(product_id),
+    FOREIGN KEY (warehouse_id) REFERENCES Warehouses(warehouse_id),
+    UNIQUE (product_id, warehouse_id)
+);
+```
+#### Attributes
+- inventory_id → INT, PK
+- product_id → INT, FK
+- warehouse_id → INT, FK
+- quantity → INT
+- updated_at → TIMESTAMP
+- (product_id, warehouse_id) → UNIQUE
+#### Relationship
+- Junction table linking Products and Warehouses (many-to-many).
+- One inventory → many logs.
+##
 ### Suppliers
-- id (PK)
-- name
-- contact_email
-
+```
+CREATE TABLE Suppliers (
+    supplier_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    contact_email VARCHAR(255) NOT NULL
+);
+```
+#### Attributes
+- supplier_id → INT, PK
+- name → VARCHAR(255)
+- contact_email → VARCHAR(255)
+#### Relationship
+- One supplier → many products (via Product_Suppliers).
+##
 ### Product_Suppliers
-- id (PK)
-- product_id (FK → Products.id)
-- supplier_id (FK → Suppliers.id)
-
+```
+CREATE TABLE Product_Suppliers (
+    product_supplier_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    supplier_id INT NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES Products(product_id),
+    FOREIGN KEY (supplier_id) REFERENCES Suppliers(supplier_id),
+    UNIQUE (product_id, supplier_id)
+);
+```
+#### Attributes
+- product_supplier_id → INT, PK
+- product_id → INT, FK
+- supplier_id → INT, FK
+- (product_id, supplier_id) → UNIQUE
+#### Relationship
+- Junction table for many-to-many between Products and Suppliers.
+##
 ### Inventory_Logs
-- id (PK)
-- inventory_id (FK → Inventory.id)
-- change (Integer)
-- reason (Text)
-- changed_at (Timestamp)
-
+```
+CREATE TABLE Inventory_Logs (
+    inventory_log_id INT AUTO_INCREMENT PRIMARY KEY,
+    inventory_id INT NOT NULL,
+    change INT NOT NULL,
+    reason TEXT,
+    changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (inventory_id) REFERENCES Inventory(inventory_id)
+);
+```
+#### Attributes
+- inventory_log_id → INT, PK
+- inventory_id → INT, FK
+- change → INT
+- reason → TEXT
+- changed_at → TIMESTAMP
+#### Relationship
+- One inventory → many logs (1:N).
+##
 ### Bundles
-- id (PK)
-- bundle_product_id (FK → Products.id)
-- component_product_id (FK → Products.id)
-- quantity (Integer)
-
+```
+CREATE TABLE Bundles (
+    bundle_id INT AUTO_INCREMENT PRIMARY KEY,
+    bundle_product_id INT NOT NULL,
+    component_product_id INT NOT NULL,
+    quantity INT NOT NULL CHECK (quantity > 0),
+    FOREIGN KEY (bundle_product_id) REFERENCES Products(product_id),
+    FOREIGN KEY (component_product_id) REFERENCES Products(product_id),
+    UNIQUE (bundle_product_id, component_product_id)
+);
+```
+#### Attributes
+- bundle_id → INT, PK
+- bundle_product_id → INT, FK
+- component_product_id → INT, FK
+- quantity → INT
+- (bundle_product_id, component_product_id) → UNIQUE
+#### Relationship
+- Self-referencing many-to-many relationship on Products.
+- One bundle → multiple component products.
 ---
 ## Design Decisions and Justifications
 
@@ -97,4 +203,7 @@
 - Should bundles have dynamic or fixed pricing?
 - Should thresholds be customizable by warehouse or product only?
 - Should suppliers be global or company-specific?
+
+
+
 

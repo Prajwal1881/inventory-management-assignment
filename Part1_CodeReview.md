@@ -30,8 +30,7 @@
 
 ## This is the Corrected Code
 
-```
-@app.route('/api/products', methods=['POST'])
+```@app.route('/api/products', methods=['POST'])
 def create_product():
     data = request.json
 
@@ -54,15 +53,22 @@ def create_product():
         )
 
         db.session.add(product)
-        db.session.flush()  # get product.id
+        db.session.flush()  # get product_id
 
         inventory = Inventory(
-            product_id=product.id,
+            product_id=product.product_id,
             warehouse_id=data['warehouse_id'],
             quantity=data.get('initial_quantity', 0)
         )
         db.session.add(inventory)
         db.session.commit()
+
+        return {"message": "Product created", "product_id": product.product_id}, 201
+
+    except Exception as e:
+        db.session.rollback()
+        return {"error": str(e)}, 500
+
 
         return {"message": "Product created", "product_id": product.id}, 201
 

@@ -9,15 +9,15 @@ def low_stock_alerts(company_id):
         
         # Query to get products with low stock
         results = db.session.query(
-            Product.id, Product.name, Product.sku,
+            Product.product_id, Product.name, Product.sku,
             Inventory.warehouse_id, Warehouse.name.label('warehouse_name'),
             Inventory.quantity, Product.low_stock_threshold,
-            Supplier.id.label('supplier_id'), Supplier.name.label('supplier_name'),
+            Supplier.supplier_id, Supplier.name.label('supplier_name'),
             Supplier.contact_email
-        ).join(Inventory, Inventory.product_id == Product.id) \
-         .join(Warehouse, Warehouse.id == Inventory.warehouse_id) \
-         .join(Product_Suppliers, Product_Suppliers.product_id == Product.id) \
-         .join(Supplier, Supplier.id == Product_Suppliers.supplier_id) \
+        ).join(Inventory, Inventory.product_id == Product.product_id) \
+         .join(Warehouse, Warehouse.warehouse_id == Inventory.warehouse_id) \
+         .join(Product_Suppliers, Product_Suppliers.product_id == Product.product_id) \
+         .join(Supplier, Supplier.supplier_id == Product_Suppliers.supplier_id) \
          .filter(Warehouse.company_id == company_id) \
          .filter(Inventory.quantity < Product.low_stock_threshold) \
          .all()
@@ -25,11 +25,11 @@ def low_stock_alerts(company_id):
         for r in results:
             # Estimate days until stockout (simple assumption)
             # Ideally, this comes from recent sales logs
-            avg_daily_sales = 1  # This should comput from sales_logs
+            avg_daily_sales = 1  # This should be computed from sales_logs
             days_until_stockout = r.quantity // avg_daily_sales if avg_daily_sales > 0 else None
             
             alerts.append({
-                "product_id": r.id,
+                "product_id": r.product_id,
                 "product_name": r.name,
                 "sku": r.sku,
                 "warehouse_id": r.warehouse_id,
